@@ -11,11 +11,27 @@ The *Swet Bakery Project* focuses on:
 
 This is github project Swet Bakery Project  *[Sweets App](https://github.com/ayaandhaqane/sweetBakery-flutter)*, frontend and Backend 
 
-## Features
-- *User Management*: Provide secure access and manage user profiles.
-- *Order Management*: Handle user orders, including creating and retrieving order details.
-- *Database Integration*: Store and retrieve user and order data with MongoDB.
-- *RESTful API*: Backend API for frontend integration.
+# Features
+
+# Backend Features:
+
+User Management: Provide secure access and manage user profiles.
+
+Order Management: Handle user orders, including creating and retrieving order details.
+
+Database Integration: Store and retrieve user and order data with MongoDB.
+
+RESTful API: Backend API for frontend integration.
+
+# Flutter Frontend Features:
+
+User Authentication: Login and signup for users.
+
+Order Placement: Users can browse sweets and place orders.
+
+Profile Management: Users can view and update their profiles.
+
+Interactive UI: A responsive and engaging mobile experience.
 
 ## Project Structure
 - assets/modalSchema/: MongoDB schemas for managing user and order data (e.g., profileSchema.js, orderSchema.js).

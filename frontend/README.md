@@ -142,7 +142,7 @@ Sweet Bakery App is a modern, feature-rich mobile application designed to enhanc
 
 
 ### Help Page
-![WhatsApp Image 2025-01-31 at 15 25 07_8a1ba322](https://github.com/user-attachments/assets/b86903e7-7598-45dd-996f-8405f62347af)
+![WhatsApp Image 2025-01-31 at 20 23 19_c4fab0c4](https://github.com/user-attachments/assets/e7830b28-4ec6-494c-9f95-7a6517cb4711)
 
 
 ---

@@ -148,4 +148,4 @@ Sweet Bakery App is a modern, feature-rich mobile application designed to enhanc
 #### **Frontend**
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/sweet-bakery-app.git
+   git clone https://github.com/ayaandhaqane/sweetBakery-flutter

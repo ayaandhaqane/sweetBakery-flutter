@@ -105,24 +105,32 @@ Sweet Bakery App is a modern, feature-rich mobile application designed to enhanc
 ## Screenshots 📸
 
 ### Welcome Page
+![WhatsApp Image 2025-01-31 at 18 53 51_eef6cd8a](https://github.com/user-attachments/assets/06460203-2901-4acf-93dd-514ecb8869cc)
 
 
 ### Sign-In Page
+![WhatsApp Image 2025-01-31 at 18 53 51_c3c22126](https://github.com/user-attachments/assets/a5df6cb6-12a8-4ec6-8241-e05b0add5486)
 
 
 ### Sign-up Page
+![WhatsApp Image 2025-01-31 at 18 53 51_2eb6f189](https://github.com/user-attachments/assets/e814841e-8e88-4340-a19d-06e89ff2b67d)
 
 
 ### Home Page
+![WhatsApp Image 2025-01-31 at 17 08 54_929dbb25](https://github.com/user-attachments/assets/39dd4ae7-de8b-4fa5-a190-aaec4e62ef3f)
 
 
 ### List All Cards Page
+![WhatsApp Image 2025-01-31 at 17 09 38_3ea7d4c5](https://github.com/user-attachments/assets/2e679177-0c7b-4067-bdc0-503887840635)
 
 
 ### Product Details Page
+![WhatsApp Image 2025-01-31 at 17 11 18_e8deee67](https://github.com/user-attachments/assets/1a8c20cb-bb68-4190-a04d-4d91a67c8ff1)
 
 
 ### User Shoping Page
+![WhatsApp Image 2025-01-31 at 17 10 27_ea945172](https://github.com/user-attachments/assets/73982eda-44cb-4c6c-b7fb-3bd3bad566d5)
+![WhatsApp Image 2025-01-31 at 17 10 28_19bc4c51](https://github.com/user-attachments/assets/812b3812-4986-4921-b915-e9200700331e)
 
 
 ### Profie Page
@@ -132,6 +140,7 @@ Sweet Bakery App is a modern, feature-rich mobile application designed to enhanc
 
 
 ### Help Page
+![WhatsApp Image 2025-01-31 at 15 25 07_8a1ba322](https://github.com/user-attachments/assets/b86903e7-7598-45dd-996f-8405f62347af)
 
 
 ---

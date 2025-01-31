@@ -79,9 +79,11 @@ Sweet Bakery App is a modern, feature-rich mobile application designed to enhanc
 - **`profileRoute.js`**: User-related routes for login and registration.
 - **`TBLrouter.js`**: Routes for managing products and transactions.
 
-#### **modalSchema/**
-- **`profileSchema.js`**: MongoDB schema for user profiles.
-- **`TBLSchema.js`**: MongoDB schema for products and transactions.
+#### **router/**
+- **`profileRoute.js`**: User-related routes for login and registration.
+- **`TBLrouter.js`**: Routes for managing products and transactions.
+- **`orderRoute.js`**: Routes for managing user orders, including creating and viewing orders.
+
 
 #### **Other Backend Files**
 - **`app.js`**: Entry point for the backend, initializes the server and routes.

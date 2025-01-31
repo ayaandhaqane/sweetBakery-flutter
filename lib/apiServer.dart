@@ -3,18 +3,14 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
-  final String baseUrl = "http://192.168.171.19:3000/api";
+  final String baseUrl = "http://192.168.18.8:3000/api";
   final FlutterSecureStorage storage = FlutterSecureStorage(); // For JWT token storage
 
   // Fetch all products
-  Future<List<dynamic>> fetchProducts({String query = ''}) async {
-    final response = await http.get(
-      Uri.parse(query.isEmpty ? baseUrl : '$baseUrl?search=$query'),  // Append the search query if present
-    );
-
+  Future<List<dynamic>> fetchProducts() async {
+    final response = await http.get(Uri.parse('$baseUrl/read'));
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data;
+      return json.decode(response.body);
     } else {
       throw Exception('Failed to load products');
     }

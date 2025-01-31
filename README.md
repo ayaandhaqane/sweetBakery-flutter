@@ -92,13 +92,13 @@ Sweet Bakery App is a modern, feature-rich mobile application designed to enhanc
 
 ## Team Members 👥
 
-| Name                       | GitHub Username                       |
-|----------------------------|---------------------------------------|
-| Ayan Abdulahi Dhaqane      | [Ayan](https://github.com/ayaandhaqane)            |
-| Bahja Abdi Jama            | [Bahja](https://github.com/bahjoabdi)             |
-| Muzamil Tahlil Dahir       | [Muzamil](https://github.com/MuzamilTahliil)       |
-| Abdirashid Hasan Mohamed   | [Abdirashid](https://github.com/AbdirashiidHassan) |
-| Ibrahim Farhan Abshir      | [Ibrahim](https://github.com/ibrahimxabeeb)        |
+| Name                       | GitHub Username                        |
+|----------------------------|----------------------------------------|
+| Ayan Abdulahi Dhaqane      | [https://github.com/ayaandhaqane]      |
+| Bahja Abdi Jama            | [https://github.com/bahjoabdi]         |
+| Muzamil Tahlil Dahir       | [https://github.com/MuzamilTahliil]    |
+| Abdirashid Hasan Mohamed   | [https://github.com/AbdirashiidHassan] |
+| Ibrahim Farhan Abshir      | [https://github.com/ibrahimxabeeb]     |
 
 ---
 

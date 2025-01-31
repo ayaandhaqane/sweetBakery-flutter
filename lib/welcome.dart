@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sweets_app/home.dart'; // Import your Home screen
 // import 'package:sweets_app/signin.dart'; // Import your SignIn screen
 
+
 class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

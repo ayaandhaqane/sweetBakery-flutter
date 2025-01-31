@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:sweets_app/apiServer.dart';
-import 'package:sweets_app/bottom_nav.dart';
-import 'package:sweets_app/details.dart'; // Import the Details screen
+import 'package:sweets_app/bottom_nav.dart'; // Import BottomNavBar
+import 'package:sweets_app/cart.dart';
+import 'package:sweets_app/details.dart';
+import 'package:sweets_app/home.dart';
+import 'package:sweets_app/userCart.dart';
 
 class OurCards extends StatefulWidget {
-  const OurCards({super.key});
+  final bool isDarkMode; // Add isDarkMode parameter
+
+  const OurCards({super.key, required this.isDarkMode}); // Receive the isDarkMode parameter
 
   @override
   _OurCardsState createState() => _OurCardsState();
@@ -13,7 +18,10 @@ class OurCards extends StatefulWidget {
 class _OurCardsState extends State<OurCards> {
   final ApiService apiService = ApiService();
   List<dynamic> products = [];
+  List<dynamic> filteredProducts = [];
   bool isLoading = true; // Loading indicator
+  bool isSearching = false;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -26,6 +34,7 @@ class _OurCardsState extends State<OurCards> {
       final fetchedProducts = await apiService.fetchProducts();
       setState(() {
         products = fetchedProducts;
+        filteredProducts = products; // Initially, show all products
         isLoading = false;
       });
     } catch (e) {
@@ -36,49 +45,156 @@ class _OurCardsState extends State<OurCards> {
     }
   }
 
+  void _filterProducts(String query) {
+    setState(() {
+      filteredProducts = products
+          .where((product) =>
+              product["name"].toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
+  }
+
+  void _addToCart(Map<String, dynamic> product) {
+    Cart.addItem(product, 1);
+    setState(() {}); // Refresh UI to update cart count
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Adjust background color based on dark mode
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Adjust AppBar color based on dark mode
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(
+            Icons.arrow_back,
+            
+             ),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Home()), // Navigate to Home screen
+            );
           },
         ),
-        title: const Text(
-          "Lists",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: isSearching
+            ? Container(
+                height: 45,
+                decoration: BoxDecoration(
+                  color: widget.isDarkMode ? Colors.grey[800] : Colors.grey[200], // Adjust search field background
+                  borderRadius: BorderRadius.circular(25), // Rounded corners
+                ),
+                child: TextField(
+                  controller: searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: "Search",
+                    hintStyle: TextStyle(
+                        color: widget.isDarkMode ? Colors.white : Colors.black), // Hint text color based on dark mode
+                    border: InputBorder.none,
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    contentPadding: const EdgeInsets.only(left: 10, top: 12),
+                  ),
+                  onChanged: _filterProducts,
+                ),
+              )
+            : Text(
+                "List Cards",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: widget.isDarkMode ? Colors.white : Colors.black, // Text color based on dark mode
+                ),
+              ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(
+              isSearching ? Icons.close : Icons.search,
+              color: widget.isDarkMode ? Colors.white : Colors.black, // Icon color based on dark mode
+            ),
+            onPressed: () {
+              setState(() {
+                isSearching = !isSearching;
+                searchController.clear();
+                filteredProducts = products;
+              });
+            },
+          ),
+          Stack(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.shopping_cart,
+                  color: widget.isDarkMode ? Colors.white : Colors.black, // Icon color based on dark mode
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyCartPage(isDarkMode: widget.isDarkMode)),
+                  );
+                },
+              ),
+              if (Cart.items.isNotEmpty)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${Cart.items.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator()) // Show loader
-          : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 0.7,
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 12, // Reduce space to make cards smaller
+                        childAspectRatio: 0.85, // Adjust aspect ratio for smaller cards
+                      ),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (context, index) {
+                        final product = filteredProducts[index];
+                        return _buildProductCard(product);
+                      },
+                    ),
+                  ],
                 ),
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return _buildProductCard(product);
-                },
               ),
             ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 0,
+        currentIndex: 1,
         onTap: (index) {
-          // Handle navigation here if required
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => OurCards(isDarkMode: widget.isDarkMode)),
+          );
         },
+        isDarkMode: widget.isDarkMode, // Pass isDarkMode value to BottomNavBar
       ),
     );
   }
@@ -86,68 +202,80 @@ class _OurCardsState extends State<OurCards> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     return GestureDetector(
       onTap: () {
-        // Navigate to the Details screen
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => Details(product: product),
+            builder: (context) => Details(product: product,isDarkMode: widget.isDarkMode),
           ),
         );
       },
       child: Card(
+        color: widget.isDarkMode ? Colors.grey[800] : Colors.white, // Card color based on dark mode
+        elevation: 2,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(36.0),
+          borderRadius: BorderRadius.circular(16.0),
         ),
-        elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(10.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Image
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(product["imageUrl"]),
-                backgroundColor: Colors.grey[200],
-              ),
-              const SizedBox(height: 8.0),
-              // Product Name
-              Text(
-                product["name"] ?? "Unnamed",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16.0,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4.0),
-              // Product Price
-              Text(
-                "\$${product["price"] ?? "0.00"}",
-                style: const TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
+              Center(
+                child: Container(
+                  height: 95, // Smaller height for better UI fit
+                  width: 95,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: NetworkImage(product["imageUrl"]),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  product["name"] ?? "Unnamed",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: widget.isDarkMode ? Colors.white : Colors.black, // Text color based on dark mode
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 4),
               const Spacer(),
-              // Add Button
-              ElevatedButton(
-                onPressed: () {
-                  print("${product["name"]} added to cart!");
-                },
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(12.0),
-                  backgroundColor: Colors.red,
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 20,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "\$${product["price"] ?? "0.00"}",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56), // Text color based on dark mode
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _addToCart(product);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(8),
+                      backgroundColor: widget.isDarkMode ? Colors.deepPurple : Color.fromARGB(255, 31, 10, 56),
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

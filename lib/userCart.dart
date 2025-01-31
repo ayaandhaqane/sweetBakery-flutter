@@ -1,129 +1,227 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:sweets_app/cart.dart';
+import 'package:sweets_app/home.dart';
 
 class MyCartPage extends StatefulWidget {
+  final bool isDarkMode; // Add isDarkMode parameter
+
+  const MyCartPage({super.key, required this.isDarkMode}); // Receive the isDarkMode parameter
+
   @override
   _MyCartPageState createState() => _MyCartPageState();
 }
 
 class _MyCartPageState extends State<MyCartPage> {
-  // Sample cart data
-  List<Map<String, dynamic>> cartItems = [
-    {
-      "imageUrl": "https://i.pinimg.com/736x/8d/08/ef/8d08ef07cc3d52053ea1c7487c86112d.jpg",
-      "title": "Chocolate Cake",
-      "subtitle": "Cake",
-      "price": 50.00,
-      "quantity": 1,
-    },
-    {
-      "imageUrl": "https://i.pinimg.com/736x/8d/08/ef/8d08ef07cc3d52053ea1c7487c86112d.jpg",
-      "title": "Divine Cupcake Delights",
-      "subtitle": "Cup Cake",
-      "price": 12.00,
-      "quantity": 1,
-    },
-    {
-      "imageUrl": "https://i.pinimg.com/736x/8d/08/ef/8d08ef07cc3d52053ea1c7487c86112d.jpg",
-      "title": "Vanilla Velvet Delights",
-      "subtitle": "Cake",
-      "price": 30.00,
-      "quantity": 1,
-    },
-  ];
+  void _updateCart() {
+    setState(() {}); // Refresh the cart page
+  }
 
-  void _showDeleteDialog(int index) {
-    final item = cartItems[index];
+  void _removeItem(int index) {
+    setState(() {
+      Cart.items.removeAt(index); // Remove the selected item
+    });
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
+  // Function to show a dialog for entering address and phone number
+void _showCheckoutDialog(BuildContext context) {
+  final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: widget.isDarkMode ? Colors.black : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        title: Text(
+          "Enter your Information",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            color: widget.isDarkMode ? Colors.white : Colors.black,
           ),
-          title: Text(
-            "Remove from Cart?",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8.0),
-                child: Image.network(
-                  item["imageUrl"],
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _addressController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(
+                  Icons.email, // Icon for email
+                  color: widget.isDarkMode ? Colors.grey[400] : Colors.black,
                 ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                item["title"],
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                item["subtitle"],
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              SizedBox(height: 8),
-              Text(
-                "\$${item["price"].toStringAsFixed(2)}",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-              },
-              child: Text("Cancel", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  cartItems.removeAt(index); // Remove item
-                });
-                Navigator.pop(context); // Close dialog
-
-                // Show snackbar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${item["title"]} removed from the cart.'),
-                    behavior: SnackBarBehavior.floating,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xff864912), // Brown color
-                shape: RoundedRectangleBorder(
+                hintText: "Enter your address",
+                hintStyle: TextStyle(
+                    color: widget.isDarkMode ? Colors.grey[400] : Colors.black),
+                filled: true,
+                fillColor:
+                    widget.isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
                 ),
               ),
-              child: Text("Yes, Remove"),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(
+                  Icons.phone, // Icon for phone
+                  color: widget.isDarkMode ? Colors.grey[400] : Colors.black,
+                ),
+                hintText: "Enter your phone number",
+                hintStyle: TextStyle(
+                    color: widget.isDarkMode ? Colors.grey[400] : Colors.black),
+                filled: true,
+                fillColor:
+                    widget.isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              keyboardType: TextInputType.phone,
             ),
           ],
-        );
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              final address = _addressController.text;
+              final phone = _phoneController.text;
+
+              if (address.isNotEmpty && phone.isNotEmpty) {
+                Navigator.pop(context); // Close the dialog
+                sendOrder(address, phone); // Send order to backend
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Please fill in all fields."),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: widget.isDarkMode
+                  ? Colors.deepPurple
+                  : const Color.fromARGB(255, 31, 10, 56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            child: const Text(
+              "Proceed",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+
+
+// Add this function to your _MyCartPageState class
+Future<void> sendOrder(String address, String phone) async {
+  final String apiUrl = "http://192.168.18.8:3000/api/new"; // Replace with your backend API URL
+
+  // Prepare the order data
+  final orderData = {
+    "address": address,
+    "phone": phone,
+    "items": Cart.items.map((item) {
+      return {
+        "name": item["name"],
+        "quantity": item["quantity"],
+        "price": item["price"],
+      };
+    }).toList(),
+    "totalPrice": Cart.getTotalPrice(),
+  };
+
+  try {
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: jsonEncode(orderData),
+    );
+
+    if (response.statusCode == 200) {
+      // Handle success
+      print("Order sent successfully: ${response.body}");
+      setState(() {
+        Cart.items.clear(); // Clear cart after successful order
+      });
+      _showSuccessSnackBar(context);
+    } else {
+      // Handle failure
+      print("Failed to send order: ${response.body}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to send order: ${response.body}")),
+      );
+    }
+  } catch (e) {
+    print("Error sending order: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error sending order: $e")),
     );
   }
+}
+
+
+
+
+
+void _showSuccessSnackBar(BuildContext context) {
+  // Show a success message using SnackBar
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: const Text(
+        "Order placed successfully!",
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Color.fromARGB(255, 31, 10, 56), // Green color for success
+      duration: const Duration(seconds: 3), // Duration of the SnackBar
+    ),
+  );
+
+  // Navigate to home page after a delay
+  Future.delayed(const Duration(seconds: 1), () {
+    setState(() {
+      Cart.items.clear(); // Clear the cart after successful order
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Home()), // Navigate to home
+    );
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Adjust background color based on dark mode
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Adjust AppBar color based on dark mode
         elevation: 0,
-        foregroundColor: Colors.black,
+        foregroundColor: widget.isDarkMode ? Colors.white : const Color.fromARGB(255, 31, 10, 56),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(
+            Icons.arrow_back,
+            color: widget.isDarkMode ? Colors.white : Colors.black, // Change arrow color based on dark mode
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -133,7 +231,7 @@ class _MyCartPageState extends State<MyCartPage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: widget.isDarkMode ? Colors.white : const Color.fromARGB(255, 31, 10, 56),
           ),
         ),
         centerTitle: true,
@@ -144,38 +242,133 @@ class _MyCartPageState extends State<MyCartPage> {
           children: [
             Expanded(
               child: ListView.builder(
-                itemCount: cartItems.length,
+                itemCount: Cart.items.length,
                 itemBuilder: (context, index) {
-                  final item = cartItems[index];
+                  final item = Cart.items[index];
                   return Dismissible(
-                    key: Key(item["title"]),
+                    key: Key(item["name"]),
                     direction: DismissDirection.endToStart,
                     background: Container(
                       alignment: Alignment.centerRight,
-                      padding: EdgeInsets.symmetric(horizontal: 20.0),
                       color: Colors.red[50],
-                      child: Icon(
+                      padding: const EdgeInsets.only(right: 20),
+                      child: const Icon(
                         Icons.delete,
                         color: Colors.red,
-                        size: 28,
+                        size: 30,
                       ),
                     ),
-                    confirmDismiss: (direction) async {
-                      _showDeleteDialog(index); // Show confirmation dialog
-                      return false; // Prevent automatic dismissal
+                    onDismissed: (direction) {
+                      _removeItem(index); // Remove the item when swiped
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${item["name"]} removed from the cart'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
                     },
-                    child: _buildCartItem(
-                      imageUrl: item["imageUrl"],
-                      title: item["title"],
-                      subtitle: item["subtitle"],
-                      price: item["price"],
-                      quantity: item["quantity"],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              item["imageUrl"],
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item["name"],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: widget.isDarkMode ? Colors.white : Colors.black, // Change text color based on dark mode
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  item["description"],
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: widget.isDarkMode ? Colors.white : Colors.grey),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "\$${item["price"].toStringAsFixed(2)}",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: widget.isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (item['quantity'] > 1) {
+                                      item['quantity']--;
+                                    }
+                                  });
+                                },
+                                child: Container(
+                                  width: 32,
+                                  height: 25,
+                                  decoration: BoxDecoration(
+                                    color: widget.isDarkMode ? Colors.grey[700] : Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.remove, color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                item['quantity'].toString(),
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    item['quantity']++;
+                                  });
+                                },
+                                child: Container(
+                                  width: 32,
+                                  height: 25,
+                                  decoration: BoxDecoration(
+                                    color: const Color.fromARGB(255, 31, 10, 56),
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.add, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -183,7 +376,7 @@ class _MyCartPageState extends State<MyCartPage> {
                     decoration: InputDecoration(
                       hintText: "Promo Code",
                       filled: true,
-                      fillColor: Colors.grey[200],
+                      fillColor: widget.isDarkMode ? Colors.grey[700] : Colors.grey[200],
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                         borderSide: BorderSide.none,
@@ -191,38 +384,36 @@ class _MyCartPageState extends State<MyCartPage> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () {
-                    // Promo code button pressed
-                  },
+                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xff864912),
+                    backgroundColor: const Color.fromARGB(255, 31, 10, 56),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     "Apply",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildPriceDetails(),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Proceed to checkout logic
+                _showCheckoutDialog(context); // Show the checkout dialog
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xff864912), // Brown color
+                backgroundColor: const Color.fromARGB(255, 31, 10, 56),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30.0), // Fully rounded edges
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 "Proceed to Checkout",
                 style: TextStyle(
                   color: Colors.white,
@@ -237,111 +428,17 @@ class _MyCartPageState extends State<MyCartPage> {
     );
   }
 
-  Widget _buildCartItem({
-    required String imageUrl,
-    required String title,
-    required String subtitle,
-    required double price,
-    required int quantity,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              imageUrl,
-              width: 90,
-              height: 90,
-              fit: BoxFit.cover,
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  "\$${price.toStringAsFixed(2)}",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  // Decrease quantity logic
-                },
-                child: Container(
-                  width: 32,
-                  height: 25,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Center(
-                    child: Icon(Icons.remove, color: Colors.black),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              Text(
-                quantity.toString(),
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(width: 8),
-              GestureDetector(
-                onTap: () {
-                  // Increase quantity logic
-                },
-                child: Container(
-                  width: 32,
-                  height: 25,
-                  decoration: BoxDecoration(
-                    color: Color(0xff864912),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Center(
-                    child: Icon(Icons.add, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPriceDetails() {
+    final totalPrice = Cart.getTotalPrice();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPriceRow("Sub-Total", "\$92.00"),
+        _buildPriceRow("Sub-Total", "\$${totalPrice.toStringAsFixed(2)}"),
         _buildPriceRow("Delivery Fee", "\$00.00"),
-        _buildPriceRow("Discount", "-\$12.00"),
-        Divider(color: Colors.grey),
+        const Divider(color: Colors.grey),
         _buildPriceRow(
           "Total Cost",
-          "\$80.00",
+          "\$${totalPrice.toStringAsFixed(2)}",
           isBold: true,
           fontSize: 18,
         ),
@@ -361,6 +458,7 @@ class _MyCartPageState extends State<MyCartPage> {
             style: TextStyle(
               fontSize: fontSize,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: widget.isDarkMode ? Colors.white : Colors.black, // Text color based on dark mode
             ),
           ),
           Text(
@@ -368,6 +466,7 @@ class _MyCartPageState extends State<MyCartPage> {
             style: TextStyle(
               fontSize: fontSize,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: widget.isDarkMode ? Colors.white : Colors.black, // Text color based on dark mode
             ),
           ),
         ],

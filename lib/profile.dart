@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:sweets_app/home.dart';
 import 'package:sweets_app/singin.dart'; // Add import for Login page
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final bool isDarkMode; // Add isDarkMode parameter
+
+  const ProfilePage({super.key, required this.isDarkMode}); // Receive the isDarkMode parameter
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -26,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> fetchProfileData() async {
-    final String apiUrl = "http://192.168.171.19:3000/api/profile/me";
+    final String apiUrl = "http://192.168.18.8:3000/api/profile/me";
 
     try {
       final token = await FlutterSecureStorage().read(key: "jwt_token");
@@ -64,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   // Function to upload the image to the server
   Future<void> _uploadImage(File image) async {
-    final String apiUrl = "http://192.168.171.19:3000/api/profile/upload-image"; // Adjust the endpoint
+    final String apiUrl = "http://192.168.18.8:3000/apiprofile/upload-image"; // Adjust the endpoint
     final token = await FlutterSecureStorage().read(key: "jwt_token");
 
     if (token == null) {
@@ -104,7 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: widget.isDarkMode ? Color.fromARGB(255, 34, 34, 34): const Color(0xFFF5F5F5), // Adjust background color
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : profileData == null
@@ -114,9 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     // Custom App Bar
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 43),
-                      decoration: const BoxDecoration(
-                        color: Color.fromARGB(255, 31, 10, 56),
-                        borderRadius: BorderRadius.only(
+                      decoration: BoxDecoration(
+                        color: widget.isDarkMode ? Color.fromARGB(255, 15, 4, 29) : const Color.fromARGB(255, 31, 10, 56),
+                        borderRadius: const BorderRadius.only(
                           bottomLeft: Radius.circular(30),
                           bottomRight: Radius.circular(30),
                         ),
@@ -127,8 +130,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                                onPressed: () => Navigator.pop(context),
+                                icon: Icon(Icons.arrow_back, color: widget.isDarkMode ? Colors.white : Colors.white),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const Home()),
+                                  );
+                                },
                               ),
                               const Expanded(
                                 child: Padding(
@@ -178,16 +186,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SizedBox(height: 10),
                           Text(
                             profileData?['username'] ?? "Name not available",
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: widget.isDarkMode ? Colors.white : Colors.white,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             "${profileData?['phone'] ?? 'Not available'}",
-                            style: const TextStyle(
-                              color: Colors.white70,
+                            style: TextStyle(
+                              color: widget.isDarkMode ? Colors.white : Colors.white,
                               fontSize: 16,
                             ),
                           ),
@@ -207,28 +215,32 @@ class _ProfilePageState extends State<ProfilePage> {
                                 label: "Username",
                                 value: profileData?["username"] ?? "",
                                 icon: Icons.person,
+                                isDarkMode: widget.isDarkMode,
                               ),
                               ProfileField(
                                 label: "Email",
                                 value: profileData?["email"] ?? "",
                                 icon: Icons.email,
+                                isDarkMode: widget.isDarkMode,
                               ),
                               ProfileField(
                                 label: "Phone",
                                 value: profileData?["phone"] ?? "",
                                 icon: Icons.phone,
+                                isDarkMode: widget.isDarkMode,
                               ),
                               ProfileField(
                                 label: "Address",
                                 value: profileData?["address"] ?? "Mogadishu",
                                 icon: Icons.location_on,
+                                isDarkMode: widget.isDarkMode,
                               ),
                               const SizedBox(height: 20),
                              // Logout Button with Icon Inside
                               ElevatedButton.icon(
                                 onPressed: _logout,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: widget.isDarkMode ? Colors.grey[800] : Colors.white,
                                   side: BorderSide(color: Colors.red, width: 1),
                                 ),
                                 icon: Icon(
@@ -257,8 +269,9 @@ class ProfileField extends StatelessWidget {
   final String label;
   final String value;
   final IconData icon;
+  final bool isDarkMode;
 
-  const ProfileField({super.key, required this.label, required this.value, required this.icon});
+  const ProfileField({super.key, required this.label, required this.value, required this.icon, required this.isDarkMode});
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +281,7 @@ class ProfileField extends StatelessWidget {
         const SizedBox(height: 15),
         Row(
           children: [
-            Icon(icon, color: Colors.grey),
+            Icon(icon, color: isDarkMode ? Colors.white70 : Colors.grey),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -276,16 +289,16 @@ class ProfileField extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      color: Colors.grey,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.grey,
                       fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
                     value,
-                    style: const TextStyle(
-                      color: Colors.black,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
                       fontSize: 16,
                     ),
                   ),

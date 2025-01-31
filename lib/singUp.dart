@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:sweets_app/apiServer.dart';
 import 'package:sweets_app/singin.dart';
 
-
 class SignUpPage extends StatelessWidget {
   // Define controllers
   final TextEditingController nameController = TextEditingController();

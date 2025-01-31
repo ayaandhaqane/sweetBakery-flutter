@@ -1,114 +1,217 @@
 import 'package:flutter/material.dart';
+import 'package:sweets_app/cart.dart';
+import 'package:sweets_app/userCart.dart';
 
-class Details extends StatelessWidget {
+class Details extends StatefulWidget {
   final Map<String, dynamic> product;
+  final bool isDarkMode; // Add isDarkMode parameter
 
-  const Details({super.key, required this.product});
+  const Details({super.key, required this.product, required this.isDarkMode}); // Receive the isDarkMode parameter
+
+  @override
+  _DetailsState createState() => _DetailsState();
+}
+
+class _DetailsState extends State<Details> {
+  int quantity = 1;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
+      backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Set background color based on dark mode
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🔹 Image Section with Arrow on top
             Stack(
               children: [
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(product["imageUrl"]),
-                      fit: BoxFit.cover,
+                Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.isDarkMode ? Colors.white30 : Colors.black26,
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        widget.product["imageUrl"] ?? "",
+                        height: 350,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
                 Positioned(
-                  top: 40,
-                  left: 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
+                  top: 16, // Adjust the positioning of the arrow
+                  left: 16, // Adjust the positioning of the arrow
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: widget.isDarkMode ? Colors.white : Colors.black, // Color for back arrow based on dark mode
+                      size: 30, // Size of the back arrow
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context); // Navigate to the previous screen
                     },
-                    child: CircleAvatar(
-                      backgroundColor: Colors.white.withOpacity(0.7),
-                      child: Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: 24,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 🔹 Title and Rating
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.product["name"] ?? "Unnamed Product",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56), // Title Color based on dark mode
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (index) => Icon(
+                          Icons.star,
+                          color: index < (widget.product["rating"]?.toInt() ?? 0)
+                              ? Colors.amber // Active star color
+                              : widget.isDarkMode ? Colors.grey : Colors.grey[300], // Active or inactive star color
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // 🔹 Quantity Selector
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.remove_circle_outline,
+                        size: 28,
+                        color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          if (quantity > 1) quantity--;
+                        });
+                      },
+                    ),
+                    Text(
+                      "$quantity",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.add_circle_outline,
+                        size: 28,
+                        color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          quantity++;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // 🔹 Description Section
+            Text(
+              "Description",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              widget.product["description"] ?? "No description available.",
+              style: TextStyle(
+                fontSize: 14,
+                color: widget.isDarkMode ? Colors.grey[400] : Colors.grey[600], // Text color based on dark mode
+              ),
+            ),
+            const Spacer(),
+
+            // 🔹 Price and Add to Cart Section
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Total Price",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56),
+                      ),
+                    ),
+                    Text(
+                      "\$${((widget.product["price"] ?? 0.0) * quantity).toStringAsFixed(2)}",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: widget.isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56),
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        widget.isDarkMode ? Colors.deepPurple : const Color.fromARGB(255, 31, 10, 56), // Button color based on dark mode
+                    minimumSize: const Size(150, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Cart.addItem(widget.product, quantity); // Add to cart
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyCartPage(isDarkMode: widget.isDarkMode)), // Pass dark mode status
+                    );
+                  },
+                  icon: const Icon(Icons.shopping_bag, color: Colors.white),
+                  label: const Text(
+                    "Add To Cart",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Product Name
-                  Text(
-                    product["name"],
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Price
-                  Text(
-                    "\$${product["price"]}",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Description
-                  Text(
-                    "Description",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    product["description"],
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  // Add to Cart Button
-                  Center(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        backgroundColor: Colors.green,
-                      ),
-                      onPressed: () {
-                        // Add action for "Add to Cart"
-                      },
-                      child: Text(
-                        "Add to Cart",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sweets_app/apiServer.dart';
-import 'package:sweets_app/card.dart';
 import 'package:sweets_app/help.dart';
+import 'package:sweets_app/homeCard.dart';
 import 'package:sweets_app/chips.dart';
 import 'package:sweets_app/bottom_nav.dart';
 import 'package:sweets_app/policy.dart';
@@ -21,6 +21,7 @@ class _HomeState extends State<Home> {
   String activeCategory = "Chocolate"; // Default active category
   List<dynamic> products = []; // List to store data fetched from the backend
   bool isLoading = true; // Show loading indicator while data is being fetched
+  bool _isDarkMode = false; // Default mode is light mode
 
   @override
   void initState() {
@@ -43,60 +44,80 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set entire background to white
+      backgroundColor: _isDarkMode ? const Color.fromARGB(255, 31, 30, 30) : Color.fromARGB(255, 240, 236, 236), // Background color changes based on dark mode
       appBar: AppBar(
-  elevation: 0,
-  backgroundColor: const Color.fromARGB(255, 199, 199, 199),
-  automaticallyImplyLeading: false, //  Remove the default back arrow
-  centerTitle: false,
-  title: Flexible(
-    child: FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text(
-        "Sweet Bakery",
-        style: const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-          fontSize: 22, // Ensuring readable size
+        
+        elevation: 0,
+        backgroundColor: _isDarkMode ? const Color.fromARGB(255, 34, 34, 34): const Color.fromARGB(255, 245, 239, 239),
+        automaticallyImplyLeading: false, // Remove the default back arrow
+        centerTitle: false,
+        title: Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              "Sweet Bakery",
+              style: TextStyle(
+                color: _isDarkMode ? Colors.white : Colors.black, // Text color changes based on dark mode
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
+          ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isDarkMode ? Icons.wb_sunny : Icons.nightlight_round, // Icon switches based on dark mode
+              color: _isDarkMode ? Colors.white : const Color.fromARGB(255, 255, 230, 1), // Icon color changes based on dark mode
+            ),
+            onPressed: _toggleTheme, // Toggle theme when icon is clicked
+          ),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == "Logout") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SignInPage()),
+                );
+              } else if (value == "Help") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HelpPage()),
+                );
+              } else if (value == "Policy") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PolicyPage()),
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return {'Logout', 'Help', 'Policy'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(
+                    choice,
+                    style: TextStyle(color: _isDarkMode ? Colors.white : Colors.black), // Text color in popup menu
+                  ),
+                );
+              }).toList();
+            },
+            icon: Icon(
+              Icons.more_vert,
+              color: _isDarkMode ? Colors.white : Colors.black, // Icon color changes based on dark mode
+            ),
+          ),
+        ],
       ),
-    ),
-  ),
-  actions: [
-    PopupMenuButton<String>(
-      onSelected: (value) {
-        if (value == "Logout") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SignInPage()),
-          );
-        } else if (value == "Help") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HelpPage()),
-          );
-        } else if (value == "Policy") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PolicyPage()),
-          );
-        }
-      },
-      itemBuilder: (BuildContext context) {
-        return {'Logout', 'Help', 'Policy'}.map((String choice) {
-          return PopupMenuItem<String>(
-            value: choice,
-            child: Text(choice),
-          );
-        }).toList();
-      },
-      icon: const Icon(Icons.more_vert),
-    ),
-  ],
-),
       body: isLoading
           ? const Center(child: CircularProgressIndicator()) // Show loader while fetching data
           : SingleChildScrollView(
@@ -105,17 +126,16 @@ class _HomeState extends State<Home> {
                 children: [
                   // Welcome Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Let's find your\nfavorite food!",
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 31, 10, 56),
+                            color: _isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56), // Text color changes based on dark mode
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -123,9 +143,10 @@ class _HomeState extends State<Home> {
                           controller: _searchController,
                           decoration: InputDecoration(
                             hintText: "Search",
-                            prefixIcon: const Icon(Icons.search),
+                            hintStyle: TextStyle(color: _isDarkMode ? Colors.white : Colors.black), // Adjust the hint text color based on dark mode
+                            prefixIcon: const Icon(Icons.search, color: Colors.grey,),
                             filled: true,
-                            fillColor: Colors.grey[300],
+                            fillColor: _isDarkMode ? Colors.grey[800] : Colors.grey[300], // Background color changes based on dark mode
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
@@ -141,12 +162,12 @@ class _HomeState extends State<Home> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           "Categories",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 31, 10, 56),
+                            color: _isDarkMode ? Colors.white : Color.fromARGB(255, 31, 10, 56), // Text color changes based on dark mode
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -199,7 +220,7 @@ class _HomeState extends State<Home> {
                         mainAxisSpacing: 40, // Vertical spacing
                         mainAxisExtent: 200, // Adjust the height of each card
                       ),
-                      itemCount: products.length,
+                      itemCount: products.length > 6 ? 6 : products.length,
                       physics: const NeverScrollableScrollPhysics(),
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
@@ -209,6 +230,7 @@ class _HomeState extends State<Home> {
                           price: product["price"].toString(),
                           imageUrl: product["imageUrl"],
                           product: product,
+                          isDarkMode: _isDarkMode,
                         );
                       },
                     ),
@@ -223,6 +245,9 @@ class _HomeState extends State<Home> {
             _currentIndex = index;
           });
         },
+            isDarkMode: _isDarkMode, // Pass dark mode state
+
+  
       ),
     );
   }

@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:sweets_app/singin.dart'; // Needed for Dio's HttpClientAdapter
+import 'package:sweets_app/welcome.dart'; // Needed for Dio's HttpClientAdapter
 
 // Custom HTTP Overrides for SSL bypass
 class MyHttpOverrides extends HttpOverrides {
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home:  SignInPage()
+      home:  WelcomePage(),
     );
   }
 }
